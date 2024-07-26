@@ -6,7 +6,7 @@ def readFurniture():
         furniture = file.readlines()
         file.close()
     except:
-        print("Error reading furniture.txt")
+        print("\n📁 File not found named furniture.txt")
     data = []
     for elems in furniture:
         furnitureData = elems.strip("\n").split(',')
@@ -50,7 +50,7 @@ def writeFile(fileData, furnitureData,filePath, person):
                 continue
         subTotal = 0
         for elems in fileData:  
-            subTotal+= float(elems['price'])
+            subTotal+= float(elems['price'] * elems['qty'])
         vatAmt = subTotal * 13/100
         while True:   
             shippingCostInp = input("Do you want to add shipping cost (yes/y or no/n)>> ")
@@ -94,7 +94,6 @@ def writeFile(fileData, furnitureData,filePath, person):
         f"{'='*85}"
         )
         file.close()
-
         print(
         f"\n"
         f"{'='*85}\n"
@@ -124,7 +123,8 @@ def writeFile(fileData, furnitureData,filePath, person):
     for elems in furnitureData:
         furnitureFile.write(f"{elems['id']},{elems['company']},{elems['name']},{elems['qty']},{elems['price']}\n")
     furnitureFile.close()
-    isAddingInvoiceRunning = True
+    print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Show furniture':<27}|\n{'|':<2}{'2. Purchase furniture':<27}|\n{'|':<2}{'3. Order furniture':<27}|\n{'|':<2}{'4. Exit program':<27}|\n{'~'*30}\n")
+    isAddingInvoiceRunning = False
     
 def displayCartItem(addedItemList):
     print(f"\n{'='*64}\n|{'ID':^20}|{'ITEM':^20}|{'QUANTITY':^20}|\n{'='*64}")
@@ -134,36 +134,42 @@ def displayCartItem(addedItemList):
 
 def addQuantity(cartCollection, furnitureData):
     displayCartItem(cartCollection)
-    while True:
+    isQtyAddingProcessRunning = True
+    while isQtyAddingProcessRunning:
         try:
             reQtyOption = int(input("Enter the ID of a product from your cart that you want to add >> "))
             isAvailable = False
             for e in cartCollection:
                 if int(e['id']) == reQtyOption:
-                    prodQty = input("Enter how many quantity you want to add or exit >> ")
-                    isAvailable = True
-                    if prodQty.upper() == "EXIT":
-                        break
-                    elif prodQty.isdigit():  
-                        prodQty = int(prodQty)
-                        if furnitureData[reQtyOption - 1]['qty'] >= prodQty:
-                            e['qty'] += prodQty
-                            furnitureData[reQtyOption - 1]['qty'] -= prodQty
-                            print(f"\n✅{prodQty} quantity is added for {e['name']} successfully!!\n")
+                    while True:
+                        prodQty = input("Enter how many quantity you want to add or exit >> ")
+                        isAvailable = True
+                        if prodQty.upper() == "EXIT":
                             break
-                        elif furnitureData[reQtyOption - 1]['qty'] > 0 and prodQty > furnitureData[reQtyOption - 1]['qty']:
-                            print(f"❌ {prodQty} Quantity is not available. Only {furnitureData[reQtyOption - 1]['qty']} is available in stock.")
+                        elif prodQty.isdigit():  
+                            prodQty = int(prodQty)
+                            if prodQty <= 0:
+                                print("\n❌ Please add atleast one quantity!!")
+                            elif furnitureData[reQtyOption - 1]['qty'] >= prodQty:
+                                e['qty'] += prodQty
+                                furnitureData[reQtyOption - 1]['qty'] -= prodQty
+                                print(f"\n✅ {prodQty} quantity is added for {e['name']} successfully!!")
+                                print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Add more quantity':<27}|\n{'|':<2}{'2. Add more items':<27}|\n{'|':<2}{'3. Exit with bill.':<27}|\n{'~'*30}\n")
+                                isQtyAddingProcessRunning = False
+                                break
+                            elif furnitureData[reQtyOption - 1]['qty'] > 0 and prodQty > furnitureData[reQtyOption - 1]['qty']:
+                                print(f"\n❌ {prodQty} is not available Only {furnitureData[reQtyOption - 1]['qty']} is available in stock.")
+                            else:
+                                print("\n❌ This product is out of stock! 🛒")
+                                isQtyAddingProcessRunning = False
+                                break
                         else:
-                            print("❌ This product is out of stock! 🛒")
-                    else:
-                        print("❌ Please enter a valid quantity")
-                        break
+                            print("\n❌ Please enter a valid quantity")
             if not isAvailable:
-                print("❌ Please enter the id of a product available in the table above only!")
+                print("\n❌ Please enter the id of a product available in the table above only!")
                 continue
         except:
-            print("⛔ Invalid input! Please enter numbers only.\n")                        
-        break
+            print("\n⛔ Invalid input! Please enter quantity in numbers only.")                        
 
 def purchaseItems(furnitureData):
     cartCollection = []
@@ -172,11 +178,12 @@ def purchaseItems(furnitureData):
     while isRunning:
         choice = input("Enter the id of the item you want to purchase or type exit >> ")
         if choice.lower() == "exit":
+            print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Show furniture':<27}|\n{'|':<2}{'2. Purchase furniture':<27}|\n{'|':<2}{'3. Order furniture':<27}|\n{'|':<2}{'4. Exit program':<27}|\n{'~'*30}\n")
             isRunning = False
         elif choice.isdigit():
             numChoice = int(choice)
             if numChoice > len(furnitureData):
-                print("\nPlease enter the ID of a product available in the table above only! 🛒")
+                print(f"\n❌ Sorry ! There is no item with ID {choice}")
             elif numChoice == 0:
                 print("\n❌ Sorry ! There is no item with ID 0")
             else:
@@ -189,7 +196,7 @@ def purchaseItems(furnitureData):
                             print("❌ This product is out of stock! 🛒")
                             isAddingQtyRunning = False
                         if  choosedItem['qty'] > 0 and qty > choosedItem['qty'] :
-                            print(f"❌ {qty} Quantity is not available. Only {choosedItem['qty']} is available in stock.")
+                            print(f"\n❌ {qty} Quantity is not available. Only {choosedItem['qty']} is available in stock.")
                         elif qty <= 0:
                             print("❌ Please choose at least one quantity")
                         else:
@@ -199,10 +206,10 @@ def purchaseItems(furnitureData):
                                     "company":choosedItem['company'],
                                     "name": choosedItem['name'],
                                     "qty": qty,
-                                    "price": choosedItem['price'] * qty
+                                    "price": choosedItem['price']
                                 }) 
                                 choosedItem['qty'] -= qty
-                                print(f"\n✅ {choosedItem['name']} is added to your item list successfully!!\n")
+                                print(f"\n✅ {choosedItem['name']} is added to your item list successfully!!")
                             else:
                                 isAvailableItem = False
                                 for elem in cartCollection:
@@ -217,13 +224,13 @@ def purchaseItems(furnitureData):
                                         "company":choosedItem['company'],
                                         "name": choosedItem['name'],
                                         "qty": qty,
-                                        "price": choosedItem['price'] * qty
+                                        "price": choosedItem['price']
                                     }) 
                                     choosedItem['qty'] -= qty
-                                    print(f"\n✅ {choosedItem['name']} is added to your item list successfully!!\n") 
+                                    print(f"\n✅ {choosedItem['name']} is added to your item list successfully!!") 
                             isOptionRunning = True
+                            print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Add more quantity':<27}|\n{'|':<2}{'2. Add more items':<27}|\n{'|':<2}{'3. Exit with bill.':<27}|\n{'~'*30}\n")
                             while isOptionRunning:
-                                print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Add more quantity':<27}|\n{'|':<2}{'2. Add more items':<27}|\n{'|':<2}{'3. Exit with bill.':<27}|\n{'~'*30}\n")
                                 try:
                                     userNextChoice = int(input("Enter your choice >> "))
                                     if userNextChoice == 1:       
@@ -239,22 +246,22 @@ def purchaseItems(furnitureData):
                                         isRunning  = False
                                         break
                                     else:
-                                        print("⛔ Invalid Choice! choose 1 to 3 only.")
-                                except Exception as e:
-                                    print("Please enter number only", e)
+                                        print("\n⛔ Invalid Choice! choose 1 to 3 only.")
+                                except:
+                                    print("\n⛔ Invalid! Please enter number only")
                     except:
-                        print("⛔ Invalid input! Please enter numbers only.\n")
+                        print("\n⛔ Invalid input! Please enter quantity in number only!!")
         else:
-            print("\nPlease enter only id of items or type exit.")
+            print(f"\n❌ Please enter valid input or type exit")
             
 def orderItems(furnitureData):
     isOrderItemRunning = True
     addedItemList = []
+    print(f"\n{'~'*76}\n|{'ID':^5}|{'MANUFACTURER':^35}|{'ITEMS':^15}|{'PRICE/QTY':^15} |\n{'~'*76}")
+    for elems in furnitureData:
+        print(f"|{elems['id']:^5}|{elems['company']:^35}|{elems['name']:^15}|{'$ '+str(elems['price']):^15} |")
+    print(f"{'~'*76}\n")
     while isOrderItemRunning:
-            print(f"\n{'~'*76}\n|{'ID':^5}|{'MANUFACTURER':^35}|{'ITEMS':^15}|{'PRICE/QTY':^15} |\n{'~'*76}")
-            for elems in furnitureData:
-                print(f"|{elems['id']:^5}|{elems['company']:^35}|{elems['name']:^15}|{'$ '+str(elems['price']):^15} |")
-            print(f"{'~'*76}\n")
             employeeChoice = input("Enter the id of item or type exit >> ")
             if employeeChoice == "exit":
                 isOrderItemRunning = False
@@ -280,7 +287,7 @@ def orderItems(furnitureData):
                                 })
                                 choosedFurniture['qty']+=quantityInput
                                 isQtyAddingProcessRunning = False
-                                print(f"\n✅ {choosedFurniture['name']} is added to your item list successfully!!\n") 
+                                print(f"\n✅ {choosedFurniture['name']} is added to your item list successfully!!") 
                             else:
                                 isProductAvailable = False
                                 for item in addedItemList:
@@ -297,70 +304,81 @@ def orderItems(furnitureData):
                                     "price": choosedFurniture["price"]
                                     })
                                     choosedFurniture['qty']+=quantityInput
-                                    print(f"\n✅ {choosedFurniture['name']} is added to your item list successfully!!\n") 
+                                    print(f"\n✅ {choosedFurniture['name']} is added to your item list successfully!!") 
                             employeeChoiceOptRunning = True
+                            print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Add more quantity':<27}|\n{'|':<2}{'2. Add more items':<27}|\n{'|':<2}{'3. Exit with bill.':<27}|\n{'~'*30}\n")
                             while employeeChoiceOptRunning:
-                                print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Add more quantity':<27}|\n{'|':<2}{'2. Add more items':<27}|\n{'|':<2}{'3. Exit with bill.':<27}|\n{'~'*30}\n")
-                                employeeChoiceOpt = int(input("Enter your choice from above >> "))
-                                if employeeChoiceOpt == 1:
-                                    displayCartItem(addedItemList)
-                                    isChoosingQtyRunning = True
-                                    while isChoosingQtyRunning:
-                                        try:
-                                            itemChoice= int(input("Choose quantity by id >> "))
-                                            itemAvailable = False
-                                            for elem in addedItemList:
-                                                if int(elem['id']) == itemChoice:
-                                                    itemAvailable = True
-                                                    while True:
-                                                        try:
-                                                            reQtyInput = int(input("Enter quantity you wanna add >> "))
-                                                            if reQtyInput <=0:
-                                                                print("Please enter quantity more then 0")
-                                                            elem['qty']+=reQtyInput
-                                                            choosedFurniture['qty']+=reQtyInput
-                                                            print(f"\n✅{reQtyInput} quantity is added for {elem['name']} successfully!!\n")
-                                                            break
-                                                        except:
-                                                            print("Please enter input in number only!!")
-                                                    isChoosingQtyRunning = False      
-                                            if itemAvailable == False:
-                                                print(f"🆔 {itemChoice} is not available in the above table")
-                                        except:
-                                            print("❌ Invalid input ! Please enter number only !")
-                                elif employeeChoiceOpt == 2:
-                                    isQtyAddingProcessRunning = False
-                                    employeeChoiceOptRunning = False
-                                elif employeeChoiceOpt == 3:
-                                    employeeChoiceOptRunning = False
-                                    isQtyAddingProcessRunning = False
-                                    writeFile(addedItemList, furnitureData,"order", "Employee") 
-                                    isOrderItemRunning = False
-                                else:
-                                    print("\n❌ Sorry ! Invalid choice ! Try again !")
+                                try:
+                                    employeeChoiceOpt = int(input("Enter your choice from above >> "))
+                                    if employeeChoiceOpt == 1:
+                                        displayCartItem(addedItemList)
+                                        isChoosingQtyRunning = True
+                                        while isChoosingQtyRunning:
+                                            try:
+                                                itemChoice= int(input("Choose quantity by id >> "))
+                                                itemAvailable = False
+                                                for elem in addedItemList:
+                                                    if int(elem['id']) == itemChoice:
+                                                        itemAvailable = True
+                                                        while True:
+                                                            try:
+                                                                reQtyInput = int(input("Enter quantity you wanna add >> "))
+                                                                if reQtyInput <=0:
+                                                                    print("\n❌ Please enter quantity more then 0")
+                                                                else:
+                                                                    elem['qty']+=reQtyInput
+                                                                    choosedFurniture['qty']+=reQtyInput
+                                                                    print(f"\n✅ {reQtyInput} quantity is added for {elem['name']} successfully!!")
+                                                                    print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Add more quantity':<27}|\n{'|':<2}{'2. Add more items':<27}|\n{'|':<2}{'3. Exit with bill.':<27}|\n{'~'*30}\n")
+                                                                    break
+                                                            except:
+                                                                print("\n⛔ Please enter input in number only!!")
+                                                        isChoosingQtyRunning = False      
+                                                if itemAvailable == False:
+                                                    print(f"\n🆔 {itemChoice} is not available in the above table")
+                                            except:
+                                                print("\n❌ Invalid input ! Please enter number only !")
+                                    elif employeeChoiceOpt == 2:
+                                        print(f"\n{'~'*76}\n|{'ID':^5}|{'MANUFACTURER':^35}|{'ITEMS':^15}|{'PRICE/QTY':^15} |\n{'~'*76}")
+                                        for elems in furnitureData:
+                                            print(f"|{elems['id']:^5}|{elems['company']:^35}|{elems['name']:^15}|{'$ '+str(elems['price']):^15} |")
+                                        print(f"{'~'*76}\n")
+                                        isQtyAddingProcessRunning = False
+                                        employeeChoiceOptRunning = False
+                                    elif employeeChoiceOpt == 3:
+                                        employeeChoiceOptRunning = False
+                                        isQtyAddingProcessRunning = False
+                                        writeFile(addedItemList, furnitureData,"order", "Employee") 
+                                        isOrderItemRunning = False
+                                    else:
+                                        print("\n❌ Sorry ! Invalid choice !")
+                                except:
+                                    print("\n❌ Sorry ! Invalid input !")
                             isQtyAddingProcessRunning = False
-                        except Exception as e:
-                            print("⛔ Invalid input! Please enter quantity in number only\n", e)
+                        except:
+                            print("\n⛔ Invalid input! Please enter quantity in number only")
             else:
-                print("⛔ Invalid input! Please enter numbers only or exit.\n")
+                print("\n⛔ Invalid input! Please enter numbers only or exit.")
 
 def main():
     furnitureData = readFurniture()
+    print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Show furniture':<27}|\n{'|':<2}{'2. Purchase furniture':<27}|\n{'|':<2}{'3. Order furniture':<27}|\n{'|':<2}{'4. Exit program':<27}|\n{'~'*30}\n")
     while True:
-        print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Show furniture':<27}|\n{'|':<2}{'2. Purchase furniture':<27}|\n{'|':<2}{'3. Order furniture':<27}|\n{'|':<2}{'4. Exit program':<27}|\n{'~'*30}\n")
         try:
             choice = int(input("Enter your choice from table >> "))
             if choice == 1:
+                furnitureData = readFurniture()
+                print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Show furniture':<27}|\n{'|':<2}{'2. Purchase furniture':<27}|\n{'|':<2}{'3. Order furniture':<27}|\n{'|':<2}{'4. Exit program':<27}|\n{'~'*30}\n")
                 displayFurniture(furnitureData)
             elif choice == 2:
                 purchaseItems(furnitureData)
             elif choice == 3:
                 orderItems(furnitureData)
             elif choice == 4:
-                print("\nThank you for purchasing! Great to have a customer like you!!✨✨\n")
+                print("\nThanks for your purchase! We're excited to have you with us! 🌟\n")
                 break
             else:
-                print("⛔ Invalid Choice! choose 1 to 4 only.")
+                print("\n⛔ Invalid Choice! choose 1 to 4 only.")
         except:
-            print("⛔ Invalid input! Please enter numbers only.\n")
+            print("\n⛔ Invalid input! Please enter numbers only.")
 main()
