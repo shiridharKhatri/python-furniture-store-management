@@ -1,6 +1,14 @@
 import datetime
 currentDatetime = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
 def readFurniture():
+    """
+    Reads furniture data from 'furniture.txt' and returns a list of dictionaries
+    containing furniture details. Each dictionary includes 'id', 'company', 'name',
+    'qty', and 'price' for each item.
+
+    Returns:
+        list: A list of dictionaries, each containing the furniture details.
+    """
     try:
         file = open('furniture.txt', 'r')
         furniture = file.readlines()
@@ -20,12 +28,31 @@ def readFurniture():
     return data
 
 def displayFurniture(furnitureData):
+    """
+    Prints a formatted table of furniture data to the console. Displays each item's 
+    ID, manufacturer, name, quantity, and price.
+
+    Args:
+        furnitureData (list): List of dictionaries containing furniture details.
+    """
     print(f"\n{'~'*91}\n|{'ID':^5}|{'MANUFACTURER':^35}|{'ITEMS':^15}|{'QUANTITY':^14}|{'PRICE/QTY':^15} |\n{'~'*91}")
     for elems in furnitureData:
         print(f"|{elems['id']:^5}|{elems['company']:^35}|{elems['name']:^15}|{elems['qty']:^14}|{'$ '+str(elems['price']):^15} |")
     print(f"{'~'*91}\n")
 
 def writeFile(fileData, furnitureData,filePath, person):
+    """
+    Creates an invoice based on the provided data and writes it to a text file. 
+    The invoice includes customer details, itemized list of purchased items, 
+    and the final amount including taxes and shipping costs. Updates the furniture
+    inventory and displays options for further actions.
+    
+    Args:
+        fileData (list): List of dictionaries containing purchased items and their details.
+        furnitureData (list): List of dictionaries containing the updated furniture details.
+        filePath (str): Directory path where the invoice file will be saved.
+        person (str): Type of person (e.g., 'Costumer' or 'Employee') for invoice labeling.
+    """
     isAddingInvoiceRunning = True
     while isAddingInvoiceRunning:
         while True:
@@ -57,21 +84,24 @@ def writeFile(fileData, furnitureData,filePath, person):
             shippingCost = 0
             if shippingCostInp.upper() == "YES" or shippingCostInp.upper() == "Y" :
                 if subTotal+vatAmt > 1000 and subTotal+vatAmt < 3000:
-                    shippingCost = 150
+                    shippingCost = 30
                 elif subTotal+vatAmt > 3000:
-                    shippingCost = 300
-                else:
                     shippingCost = 50
+                else:
+                    shippingCost = 20
                 break
             elif shippingCostInp.upper() == "NO" or shippingCostInp.upper() == "N":
                 shippingCost = 0
                 break
             else:
                 print("Please type valid answer")
-        file = open(f"invoice/{filePath}/{currentDatetime}.txt", 'w')
+        file = open(f"invoice/{filePath}/{currentDatetime}.jpg", 'w')
         invoiceNumber = int(currentDatetime.split('-')[-1]) * 3000
         file.write(
         f"{'='*85}\n"
+        f"|{'BRJ furniture stores Pvt. Ltd':^83}|\n"
+        f"|{'Pokhara-14, Matepani chowk':^83}|\n"
+        f"|{'+977061762832/061748392':^83}|\n"
         f"|{filePath.upper()+'/INVOICE':^83}|\n"
         f"{'='*85}\n"
         f"{'|':<3}{'Invoice no : ' + str(invoiceNumber):<81}|\n"
@@ -97,6 +127,9 @@ def writeFile(fileData, furnitureData,filePath, person):
         print(
         f"\n"
         f"{'='*85}\n"
+        f"|{'BRJ furniture stores Pvt. Ltd':^83}|\n"
+        f"|{'Pokhara-14, Matepani chowk':^83}|\n"
+        f"|{'+977061762832/061748392':^83}|\n"
         f"|{filePath.upper()+'/INVOICE':^83}|\n"
         f"{'='*85}\n"
         f"{'|':<3}{'Invoice no : ' + str(invoiceNumber):<81}|\n"
@@ -127,12 +160,32 @@ def writeFile(fileData, furnitureData,filePath, person):
     isAddingInvoiceRunning = False
     
 def displayCartItem(addedItemList):
+    """
+    Displays the items currently in the shopping cart.
+    
+    This function shows a formatted table of the cart items,
+    including their ID, name, and quantity.
+
+    Args:
+        addedItemList (list): A list of dictionaries representing items in the cart.
+    """
     print(f"\n{'='*64}\n|{'ID':^20}|{'ITEM':^20}|{'QUANTITY':^20}|\n{'='*64}")
     for elems in addedItemList:
         print(f"|{elems['id']:^20}|{elems['name']:^20}|{elems['qty']:^20}|") 
     print(f"{'-'*64}")
 
 def addQuantity(cartCollection, furnitureData):
+    """
+    Allows users to add more quantity of an item already in their cart.
+    
+    This function displays the current cart, lets the user select an item,
+    and add more quantity if available in stock.
+
+    Args:
+        cartCollection (list): A list of dictionaries representing items in the cart.
+        furnitureData (list): A list of dictionaries containing furniture information.
+    """
+
     displayCartItem(cartCollection)
     isQtyAddingProcessRunning = True
     while isQtyAddingProcessRunning:
@@ -172,6 +225,16 @@ def addQuantity(cartCollection, furnitureData):
             print("\n⛔ Invalid input! Please enter quantity in numbers only.")                        
 
 def purchaseItems(furnitureData):
+    """
+    Handles the process of purchasing furniture items.
+    
+    This function allows users to select items, specify quantities,
+    and add them to a cart. It manages the shopping process until
+    the user decides to check out or exit.
+
+    Args:
+        furnitureData (list): A list of dictionaries containing furniture information.
+    """
     cartCollection = []
     isRunning = True
     displayFurniture(furnitureData)
@@ -193,12 +256,12 @@ def purchaseItems(furnitureData):
                     try:
                         qty = int(input("Enter how many quantity you want >> ")) 
                         if choosedItem['qty'] == 0:
-                            print("❌ This product is out of stock! 🛒")
+                            print("\n❌ This product is out of stock! 🛒")
                             isAddingQtyRunning = False
-                        if  choosedItem['qty'] > 0 and qty > choosedItem['qty'] :
+                        elif  choosedItem['qty'] > 0 and qty > choosedItem['qty'] :
                             print(f"\n❌ {qty} Quantity is not available. Only {choosedItem['qty']} is available in stock.")
                         elif qty <= 0:
-                            print("❌ Please choose at least one quantity")
+                            print("\n❌ Please choose at least one quantity")
                         else:
                             if len(cartCollection) <= 0:
                                 cartCollection.append({
@@ -218,6 +281,7 @@ def purchaseItems(furnitureData):
                                         if choosedItem['qty'] >= qty:
                                             elem['qty'] += qty
                                             choosedItem['qty'] -= qty
+                                            print(f"\n✅ {qty} quantity of {elem['name']} is added to your item list successfully!!") 
                                 if isAvailableItem == False:
                                     cartCollection.append({
                                         "id": choosedItem['id'],
@@ -255,6 +319,16 @@ def purchaseItems(furnitureData):
             print(f"\n❌ Please enter valid input or type exit")
             
 def orderItems(furnitureData):
+    """
+    Manages the process of ordering new furniture stock.
+    
+    This function allows employees to select items and specify
+    quantities to order. It updates the furniture inventory
+    and generates an order invoice.
+
+    Args:
+        furnitureData (list): A list of dictionaries containing furniture information.
+    """
     isOrderItemRunning = True
     addedItemList = []
     print(f"\n{'~'*76}\n|{'ID':^5}|{'MANUFACTURER':^35}|{'ITEMS':^15}|{'PRICE/QTY':^15} |\n{'~'*76}")
@@ -276,8 +350,11 @@ def orderItems(furnitureData):
                     isQtyAddingProcessRunning = True
                     while isQtyAddingProcessRunning:
                         try:
-                            quantityInput = int(input("Enter quantity you wanna add >> "))
-                            if len(addedItemList) <=0:
+                            quantityInput = int(input("Enter quantity you wanna add >> ")) 
+                            if quantityInput <=0:
+                                print("\n❌ Sorry ! You can't add negative or zero quantity!!")
+                                continue
+                            elif len(addedItemList) <=0:
                                 addedItemList.append({
                                     "id": choosedFurniture["id"],
                                     "company": choosedFurniture["company"],
@@ -287,7 +364,7 @@ def orderItems(furnitureData):
                                 })
                                 choosedFurniture['qty']+=quantityInput
                                 isQtyAddingProcessRunning = False
-                                print(f"\n✅ {choosedFurniture['name']} is added to your item list successfully!!") 
+                                print(f"\n✅ {choosedFurniture['name']} is added to your item list successfully!!")
                             else:
                                 isProductAvailable = False
                                 for item in addedItemList:
@@ -335,7 +412,7 @@ def orderItems(furnitureData):
                                                                 print("\n⛔ Please enter input in number only!!")
                                                         isChoosingQtyRunning = False      
                                                 if itemAvailable == False:
-                                                    print(f"\n🆔 {itemChoice} is not available in the above table")
+                                                    print(f"\n❌ {itemChoice} is not available in the above table")
                                             except:
                                                 print("\n❌ Invalid input ! Please enter number only !")
                                     elif employeeChoiceOpt == 2:
@@ -361,15 +438,19 @@ def orderItems(furnitureData):
                 print("\n⛔ Invalid input! Please enter numbers only or exit.")
 
 def main():
+    """
+    The main function that runs the furniture management program.
+    It displays a menu of options and handles user input to show furniture,
+    purchase furniture, order furniture, or exit the program.
+    """
     furnitureData = readFurniture()
     print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Show furniture':<27}|\n{'|':<2}{'2. Purchase furniture':<27}|\n{'|':<2}{'3. Order furniture':<27}|\n{'|':<2}{'4. Exit program':<27}|\n{'~'*30}\n")
     while True:
         try:
             choice = int(input("Enter your choice from table >> "))
             if choice == 1:
-                furnitureData = readFurniture()
-                print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Show furniture':<27}|\n{'|':<2}{'2. Purchase furniture':<27}|\n{'|':<2}{'3. Order furniture':<27}|\n{'|':<2}{'4. Exit program':<27}|\n{'~'*30}\n")
                 displayFurniture(furnitureData)
+                print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Show furniture':<27}|\n{'|':<2}{'2. Purchase furniture':<27}|\n{'|':<2}{'3. Order furniture':<27}|\n{'|':<2}{'4. Exit program':<27}|\n{'~'*30}\n")
             elif choice == 2:
                 purchaseItems(furnitureData)
             elif choice == 3:
