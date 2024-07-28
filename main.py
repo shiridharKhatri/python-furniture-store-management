@@ -79,6 +79,8 @@ def writeFile(fileData, furnitureData,filePath, person):
         for elems in fileData:  
             subTotal+= float(elems['price'] * elems['qty'])
         vatAmt = subTotal * 13/100
+
+        # Shipping cost calculation 
         while True:   
             shippingCostInp = input("Do you want to add shipping cost (yes/y or no/n)>> ")
             shippingCost = 0
@@ -95,6 +97,7 @@ def writeFile(fileData, furnitureData,filePath, person):
                 break
             else:
                 print("Please type valid answer")
+
         file = open(f"invoice/{filePath}/{currentDatetime}.jpg", 'w')
         invoiceNumber = int(currentDatetime.split('-')[-1]) * 3000
         file.write(
@@ -263,6 +266,8 @@ def purchaseItems(furnitureData):
                         elif qty <= 0:
                             print("\n❌ Please choose at least one quantity")
                         else:
+
+                            # if there is no item in the cart one item will be added
                             if len(cartCollection) <= 0:
                                 cartCollection.append({
                                     "id": choosedItem['id'],
@@ -277,11 +282,15 @@ def purchaseItems(furnitureData):
                                 isAvailableItem = False
                                 for elem in cartCollection:
                                     if int(elem['id']) == numChoice:
+
+                                        # if the item is already in the cart and user decide to add same item again instead of adding whole item it will add quantity of that item 
                                         isAvailableItem = True                                 
                                         if choosedItem['qty'] >= qty:
                                             elem['qty'] += qty
                                             choosedItem['qty'] -= qty
                                             print(f"\n✅ {qty} quantity of {elem['name']} is added to your item list successfully!!") 
+
+                                # if there is already one item in the card and if user want to add more item it will append from here
                                 if isAvailableItem == False:
                                     cartCollection.append({
                                         "id": choosedItem['id'],
@@ -335,6 +344,7 @@ def orderItems(furnitureData):
     for elems in furnitureData:
         print(f"|{elems['id']:^5}|{elems['company']:^35}|{elems['name']:^15}|{'$ '+str(elems['price']):^15} |")
     print(f"{'~'*76}\n")
+    
     while isOrderItemRunning:
             employeeChoice = input("Enter the id of item or type exit >> ")
             if employeeChoice == "exit":
