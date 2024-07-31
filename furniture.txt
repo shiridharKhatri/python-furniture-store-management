@@ -1,6 +1,6 @@
-1,HNI Corporation,Bunk Bed,40,400.0
-2,HNI CorporationHaworth Inc.,Twin Bed,175,600.0
+1,HNI Corporation,Bunk Bed,0,400.0
+2,HNI CorporationHaworth Inc.,Twin Bed,59,600.0
 3,Achham furniture,Sleeper Sofa,0,200.0
-4,Kimball International Inc.,Corner sofa,34,350.0
-5,Kohler Co.,Armchair,152,150.0
-6,Masco Corporation,Desk chair,59,100.0
+4,Kimball International Inc.,Corner sofa,100,350.0
+5,Kohler Co.,Armchair,61,150.0
+6,Masco Corporation,Desk chair,36,100.0

@@ -55,12 +55,19 @@ def writeFile(fileData, furnitureData,filePath, person):
     """
     isAddingInvoiceRunning = True
     while isAddingInvoiceRunning:
+        invoiceFirstNum = []
         while True:
             try:
-                nameOfCostumer = input("Enter your name >> ")
+                nameOfCostumer = input("Enter your full name >> ")
+                
                 if len(nameOfCostumer) <=1:
                     print("❌ Please enter your valid name  ")
+                elif nameOfCostumer.isdigit():
+                    print("❌ Please enter your valid name  ")
                 else:
+                    nameCollectionSplitting = nameOfCostumer.title().split(" ")
+                    for elems in nameCollectionSplitting:
+                        invoiceFirstNum.append(elems[0])
                     break
             except:
                 print("Error reading name")
@@ -69,17 +76,28 @@ def writeFile(fileData, furnitureData,filePath, person):
             try:
                 addressOfCostumer = input("Enter your address >> ")
                 if len(addressOfCostumer) <=1:
-                    print("❌ Please enter your valid address ")
+                    print("\n❌ Please enter your valid address ")
                 else:
                     break
             except:
-                print("Error reading name")
+                print("\n❌ Error reading name")
                 continue
+        while True :
+            try:
+                phoneNum = int(input("Enter your phone number >> "))
+                if len(str(phoneNum)) < 9:
+                    print("\n❌ Please enter your valid phone of 10 digit")
+                elif phoneNum < 0:
+                    print("\n❌ Please enter your valid phone number")
+                else:
+                    break
+            except:
+                print("\n❌ Please enter valid phone number")
         subTotal = 0
         for elems in fileData:  
+            print()
             subTotal+= float(elems['price'] * elems['qty'])
         vatAmt = subTotal * 13/100
-
         # Shipping cost calculation 
         while True:   
             shippingCostInp = input("Do you want to add shipping cost (yes/y or no/n)>> ")
@@ -98,8 +116,8 @@ def writeFile(fileData, furnitureData,filePath, person):
             else:
                 print("Please type valid answer")
 
-        file = open(f"invoice/{filePath}/{currentDatetime}.jpg", 'w')
-        invoiceNumber = int(currentDatetime.split('-')[-1]) * 3000
+        file = open(f"invoice/{filePath}/{filePath}-{nameOfCostumer}-{currentDatetime}.txt", 'w')
+        invoiceNumber = f"{''.join(invoiceFirstNum)}-{int(currentDatetime.split('-')[-1]) * 3000}"
         file.write(
         f"{'='*85}\n"
         f"|{'BRJ furniture stores Pvt. Ltd':^83}|\n"
@@ -109,8 +127,9 @@ def writeFile(fileData, furnitureData,filePath, person):
         f"{'='*85}\n"
         f"{'|':<3}{'Invoice no : ' + str(invoiceNumber):<81}|\n"
         f"{'|':<3}{person+' Name : ' + nameOfCostumer.title():<81}|\n"
+        f"{'|':<3}{person+' Number : +977' + str(phoneNum):<81}|\n"
         f"{'|':<3}{person+' Address : ' + addressOfCostumer.title():<81}|\n"
-        f"{'|':<3}{'Purchase Date : ' + str(datetime.datetime.now().strftime("%Y-%m-%d")):<81}|\n"
+        f"{'|':<3}{'Purchase Date : ' + str(datetime.datetime.now().strftime("%c")):<81}|\n"
         f"{'='*85}\n"
         f"|{'ID':^5}|{'Company':^30}|{'ITEM':^19}|{'QUANTITY':^12}|{'PRICE':^13}|\n"
         f"{'-'*85}\n")
@@ -138,7 +157,8 @@ def writeFile(fileData, furnitureData,filePath, person):
         f"{'|':<3}{'Invoice no : ' + str(invoiceNumber):<81}|\n"
         f"{'|':<3}{person+' Name : ' + nameOfCostumer.title():<81}|\n"
         f"{'|':<3}{person+' Address : ' + addressOfCostumer.title():<81}|\n"
-        f"{'|':<3}{'Purchase Date : ' + str(datetime.datetime.now().strftime("%Y-%m-%d")):<81}|\n"
+        f"{'|':<3}{person+' Number : +977' + str(phoneNum):<81}|\n"
+        f"{'|':<3}{'Purchase Date : ' + str(datetime.datetime.now().strftime("%c")):<81}|\n"
         f"{'='*85}\n"
         f"|{'ID':^5}|{'Company':^30}|{'ITEM':^19}|{'QUANTITY':^12}|{'PRICE':^13}|\n"
         f"{'-'*85}")
@@ -217,6 +237,7 @@ def addQuantity(cartCollection, furnitureData):
                                 print(f"\n❌ {prodQty} is not available Only {furnitureData[reQtyOption - 1]['qty']} is available in stock.")
                             else:
                                 print("\n❌ This product is out of stock! 🛒")
+                                print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Add more quantity':<27}|\n{'|':<2}{'2. Add more items':<27}|\n{'|':<2}{'3. Exit with bill.':<27}|\n{'~'*30}\n")
                                 isQtyAddingProcessRunning = False
                                 break
                         else:
