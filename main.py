@@ -85,7 +85,7 @@ def writeFile(fileData, furnitureData,filePath, person):
         while True :
             try:
                 phoneNum = int(input("Enter your phone number >> "))
-                if len(str(phoneNum)) < 9:
+                if len(str(phoneNum)) < 10:
                     print("\n❌ Please enter your valid phone of 10 digit")
                 elif phoneNum < 0:
                     print("\n❌ Please enter your valid phone number")
@@ -100,6 +100,7 @@ def writeFile(fileData, furnitureData,filePath, person):
         vatAmt = subTotal * 13/100
         # Shipping cost calculation 
         while True:   
+            print(f"🚚 Shipping costs are based on the total price: $20 for under $1,000, $30 for $1,000 to $3,000, and $50 for over $3,000.")
             shippingCostInp = input("Do you want to add shipping cost (yes/y or no/n)>> ")
             shippingCost = 0
             if shippingCostInp.upper() == "YES" or shippingCostInp.upper() == "Y" :
@@ -174,6 +175,7 @@ def writeFile(fileData, furnitureData,filePath, person):
         f"{'|':<3}{'Total Price : $' + str(subTotal+vatAmt+shippingCost):<81}|\n"
         f"{'='*85}"
         )
+        print(f"\n🛍️  Thank you {nameOfCostumer} for {"purchasing" if filePath == "purchase" else "ordering"}! Continue shopping.")
         isAddingInvoiceRunning = False
     furnitureFile = open(f"furniture.txt", 'w')
     for elems in furnitureData:
@@ -275,44 +277,36 @@ def purchaseItems(furnitureData):
                 print("\n❌ Sorry ! There is no item with ID 0")
             else:
                 choosedItem = furnitureData[numChoice - 1]
-                isAddingQtyRunning = True
-                while isAddingQtyRunning:
-                    try:
-                        qty = int(input("Enter how many quantity you want >> ")) 
-                        if choosedItem['qty'] == 0:
-                            print("\n❌ This product is out of stock! 🛒")
-                            isAddingQtyRunning = False
-                        elif  choosedItem['qty'] > 0 and qty > choosedItem['qty'] :
-                            print(f"\n❌ {qty} Quantity is not available. Only {choosedItem['qty']} is available in stock.")
-                        elif qty <= 0:
-                            print("\n❌ Please choose at least one quantity")
-                        else:
-
-                            # if there is no item in the cart one item will be added
-                            if len(cartCollection) <= 0:
-                                cartCollection.append({
-                                    "id": choosedItem['id'],
-                                    "company":choosedItem['company'],
-                                    "name": choosedItem['name'],
-                                    "qty": qty,
-                                    "price": choosedItem['price']
-                                }) 
-                                choosedItem['qty'] -= qty
-                                print(f"\n✅ {choosedItem['name']} is added to your item list successfully!!")
+                userChoiceValue = "YES"
+                if not len(cartCollection) <=0:
+                    for elems in cartCollection:
+                        if choosedItem['id'] == elems['id']:
+                            print(f"\n🛒 {elems["name"]} is already available in the cart with quantity {elems["qty"]}!!")
+                            while True:
+                                userDecision = input(f"Do you want to add quantity of {elems["name"]} (yes/y/no/n) >> ")
+                                if userDecision.upper() == "YES" or userDecision.upper() == "Y":
+                                    break
+                                elif userDecision.upper() == "NO" or userDecision.upper() == "N":
+                                    userChoiceValue = "NO"
+                                    break
+                                else:
+                                    print("\n❌ Please enter choice in yes/no or y/n only!!")
+                if userChoiceValue == "YES":
+                    isAddingQtyRunning = True
+                    while isAddingQtyRunning:
+                        try:
+                            qty = int(input("Enter how many quantity you want >> ")) 
+                            if choosedItem['qty'] == 0:
+                                print("\n❌ This product is out of stock! 🛒")
+                                isAddingQtyRunning = False
+                            elif  choosedItem['qty'] > 0 and qty > choosedItem['qty'] :
+                                print(f"\n❌ {qty} Quantity is not available. Only {choosedItem['qty']} is available in stock.")
+                            elif qty <= 0:
+                                print("\n❌ Please choose at least one quantity")
                             else:
-                                isAvailableItem = False
-                                for elem in cartCollection:
-                                    if int(elem['id']) == numChoice:
 
-                                        # if the item is already in the cart and user decide to add same item again instead of adding whole item it will add quantity of that item 
-                                        isAvailableItem = True                                 
-                                        if choosedItem['qty'] >= qty:
-                                            elem['qty'] += qty
-                                            choosedItem['qty'] -= qty
-                                            print(f"\n✅ {qty} quantity of {elem['name']} is added to your item list successfully!!") 
-
-                                # if there is already one item in the card and if user want to add more item it will append from here
-                                if isAvailableItem == False:
+                                # if there is no item in the cart one item will be added
+                                if len(cartCollection) <= 0:
                                     cartCollection.append({
                                         "id": choosedItem['id'],
                                         "company":choosedItem['company'],
@@ -321,30 +315,55 @@ def purchaseItems(furnitureData):
                                         "price": choosedItem['price']
                                     }) 
                                     choosedItem['qty'] -= qty
-                                    print(f"\n✅ {choosedItem['name']} is added to your item list successfully!!") 
-                            isOptionRunning = True
-                            print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Add more quantity':<27}|\n{'|':<2}{'2. Add more items':<27}|\n{'|':<2}{'3. Exit with bill.':<27}|\n{'~'*30}\n")
-                            while isOptionRunning:
-                                try:
-                                    userNextChoice = int(input("Enter your choice >> "))
-                                    if userNextChoice == 1:       
-                                        addQuantity(cartCollection, furnitureData)
-                                    elif userNextChoice == 2:
-                                        displayFurniture(furnitureData)
-                                        isAddingQtyRunning = False
-                                        isOptionRunning = False
-                                        break
-                                    elif userNextChoice == 3:
-                                        isAddingQtyRunning = False
-                                        writeFile(cartCollection, furnitureData, "purchase", 'Costumer')
-                                        isRunning  = False
-                                        break
-                                    else:
-                                        print("\n⛔ Invalid Choice! choose 1 to 3 only.")
-                                except:
-                                    print("\n⛔ Invalid! Please enter number only")
-                    except:
-                        print("\n⛔ Invalid input! Please enter quantity in number only!!")
+                                    print(f"\n✅ {choosedItem['name']} is added to your item list successfully!!")
+                                else:
+                                    isAvailableItem = False
+                                    for elem in cartCollection:
+                                        if int(elem['id']) == numChoice:
+
+                                            # if the item is already in the cart and user decide to add same item again instead of adding whole item it will add quantity of that item 
+                                            isAvailableItem = True                                 
+                                            if choosedItem['qty'] >= qty:
+                                                elem['qty'] += qty
+                                                choosedItem['qty'] -= qty
+                                                print(f"\n✅ {qty} quantity of {elem['name']} is added to your item list successfully!!") 
+
+                                    # if there is already one item in the card and if user want to add more item it will append from here
+                                    if isAvailableItem == False:
+                                        cartCollection.append({
+                                            "id": choosedItem['id'],
+                                            "company":choosedItem['company'],
+                                            "name": choosedItem['name'],
+                                            "qty": qty,
+                                            "price": choosedItem['price']
+                                        }) 
+                                        choosedItem['qty'] -= qty
+                                        print(f"\n✅ {choosedItem['name']} is added to your item list successfully!!") 
+                                isOptionRunning = True
+                                print(f"\n{'~'*30}\n|{'CHOOSE ONE OPTION':^28}|\n{'~'*30}\n{'|':<2}{'1. Add more quantity':<27}|\n{'|':<2}{'2. Add more items':<27}|\n{'|':<2}{'3. Exit with bill.':<27}|\n{'~'*30}\n")
+                                while isOptionRunning:
+                                    try:
+                                        userNextChoice = int(input("Enter your choice >> "))
+                                        if userNextChoice == 1:       
+                                            addQuantity(cartCollection, furnitureData)
+                                        elif userNextChoice == 2:
+                                            displayFurniture(furnitureData)
+                                            isAddingQtyRunning = False
+                                            isOptionRunning = False
+                                            break
+                                        elif userNextChoice == 3:
+                                            isAddingQtyRunning = False
+                                            writeFile(cartCollection, furnitureData, "purchase", 'Costumer')
+                                            isRunning  = False
+                                            break
+                                        else:
+                                            print("\n⛔ Invalid Choice! choose 1 to 3 only.")
+                                    except:
+                                        print("\n⛔ Invalid! Please enter number only")
+                        except:
+                            print("\n⛔ Invalid input! Please enter quantity in integer only!!")
+                else:
+                    continue
         else:
             print(f"\n❌ Please enter valid input or type exit")
             
@@ -423,7 +442,7 @@ def orderItems(furnitureData):
                                         isChoosingQtyRunning = True
                                         while isChoosingQtyRunning:
                                             try:
-                                                itemChoice= int(input("Choose quantity by id >> "))
+                                                itemChoice= int(input("Choose Item by id >> "))
                                                 itemAvailable = False
                                                 for elem in addedItemList:
                                                     if int(elem['id']) == itemChoice:
